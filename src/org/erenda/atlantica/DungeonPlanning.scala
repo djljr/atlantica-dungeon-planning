@@ -1,3 +1,4 @@
+
 package org.erenda.atlantica
 
 import java.util._
@@ -9,12 +10,13 @@ import org.erenda.atlantica.dao._
 @Controller
 class DungeonPlanning(@Autowired scheduleDao:ScheduleDao) 
 { 
-	def this() = this(null)
+  def this() = this(null)
  
-	@RequestMapping(Array("/schedule"))
-	def index(model:Map[String,Object]):String = 
-	{ 
-	  model.put("value", scheduleDao.getValue().toString)
-     "DungeonPlanning/schedule"
-	}
+  @RequestMapping(Array("/schedule"))
+  def index(model:Map[String,Object]):String = 
+  {
+	model.put("value", scheduleDao.getValue().toString)
+	model.put("dbvalue", scheduleDao.getDBValue().toString)
+    "DungeonPlanning/schedule"
+  }
 }
