@@ -8,6 +8,7 @@ import java.util.Map;
 import org.erenda.atlantica.domain.Dungeon;
 import org.erenda.atlantica.domain.Guild;
 import org.erenda.atlantica.domain.Player;
+import org.erenda.atlantica.domain.TeamType;
 import org.erenda.atlantica.domain.TimestampType;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
@@ -56,11 +57,11 @@ public class NationDungeonDao extends BaseDao
 		return getJdbcTemplate().queryForList(isOnRunSql, playerId, runId).size() > 0;
 	}
 	
-	final String addToRunSql = "insert into dungeonrunstats_players (dungeonrun_id, player_id, join_time) values (?, ?, ?)";
+	final String addToRunSql = "insert into dungeonrunstats_players (dungeonrun_id, player_id, join_time, team_type) values (?, ?, ?, ?)";
 	private void addPlayersToRunInternal(long runId, List<Long> playerIds, Date timestamp)
 	{
 		for(long playerId : playerIds)
-			getJdbcTemplate().update(addToRunSql, runId, playerId, timestamp.getTime());
+			getJdbcTemplate().update(addToRunSql, runId, playerId, timestamp.getTime(), TeamType.TRASH.name());
 	}
 
 	final String removeFromRunSql = "delete from dungeonrunstats_players where player_id = ? and dungeonrun_id = ?";
@@ -131,11 +132,18 @@ public class NationDungeonDao extends BaseDao
 	};
 	
 	final String runPlayersSql = "select p.id as player_id, p.name as player_name, g.name as guild_name, " +
-			"datetime(s.join_time/1000, 'unixepoch', 'localtime') as join_time " +
+			"datetime(s.join_time/1000, 'unixepoch', 'localtime') as join_time, s.team_type " +
 			"from player p join guild g on p.guild_id = g.id join dungeonrunstats_players s on s.player_id = p.id " +
 			"where dungeonrun_id = ?";
 	public List<Map<String, Object>> getDungeonRoster(long runId)
 	{
 		return getJdbcTemplate().queryForList(runPlayersSql, runId);
+	}
+	
+	final String teamUpdateSql = "update dungeonrunstats_players set team_type = ? where dungeonrun_id = ? and player_id = ?";
+	public void changePlayerTeam(long runId, long playerId, TeamType newTeam)
+	{
+		if(isValidRun(runId) && isPlayerOnRun(runId, playerId))
+			getJdbcTemplate().update(teamUpdateSql, newTeam.name(), runId, playerId);
 	}
 }

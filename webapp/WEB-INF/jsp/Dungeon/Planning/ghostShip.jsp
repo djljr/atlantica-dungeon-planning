@@ -1,4 +1,5 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ include file="/WEB-INF/jsp/include.jsp" %>
+
 <html>
 <head><title>Ghost Ship</title></head>
 <body>
@@ -7,7 +8,7 @@
 <legend>Add Players</legend>
 <form name="bulkAdd" method="post">
 <label for="bulkAddPlayers" style="display:block">Bulk:</label>
-<select name="guildId">
+<select name="guild_id">
 	<option value="-1">--Select Guild</option>
 <c:forEach items="${guilds}" var="guild">
 	<option value="${guild.id}">${guild.name}</option>
@@ -23,12 +24,20 @@
 
 <fieldset>
 <legend>Current Roster</legend>
-<table>
-<tr><th>Name</th><th>Guild</th><th>Join Time</th><th></th></tr>
-<c:forEach items="${currentRoster}" var="p">
-<tr><td>${p.player_name}</td><td>${p.guild_name}</td><td>${p.join_time}</td><td><a href="ghostship/removePlayer?runId=${param.runId}&playerId=${p.player_id}">remove</a></td></tr>
-</c:forEach>
-</table>
+<display:table name="currentRoster" id="p">
+	<display:column title="Name" property="player_name" />
+	<display:column title="Guild" property="guild_name" />
+	<display:column title="Join Time" property="join_time" />
+	<display:column>
+		<a href="ghostship/removePlayer?run_id=${param.runId}&player_id=${p.player_id}">remove</a>
+	</display:column>
+	<display:column>
+		<c:if test="${p.team_type != 'TRASH'}"><a href="ghostship/changeTeam?player_id=${p.player_id}&run_id=${param.run_id}&team_type=TRASH">Trash</a></c:if>
+		<c:if test="${p.team_type == 'TRASH'}"><span style="font-weight:bold">Trash</span></c:if>
+		<c:if test="${p.team_type != 'GATE_TOWER'}"><a href="ghostship/changeTeam?player_id=${p.player_id}&run_id=${param.run_id}&team_type=GATE_TOWER">Gate / Tower</a></c:if>
+		<c:if test="${p.team_type == 'GATE_TOWER'}"><span style="font-weight:bold">Gate / Tower</span></c:if>
+	</display:column>
+</display:table>
 </fieldset>
 </body>
 </html>

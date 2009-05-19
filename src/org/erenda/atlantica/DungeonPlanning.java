@@ -7,6 +7,7 @@ import java.util.Map;
 import org.erenda.atlantica.dao.CommonDao;
 import org.erenda.atlantica.dao.NationDungeonDao;
 import org.erenda.atlantica.domain.Dungeon;
+import org.erenda.atlantica.domain.TeamType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,13 +35,13 @@ public class DungeonPlanning
 	@RequestMapping(value="/planning/ghostship/create")
 	public String createGhostShipRun(Map<String, Object> model)
 	{
-		model.put("runId", nationDungeonDao.createDungeonRun(Dungeon.GHOST_SHIP));
+		model.put("run_id", nationDungeonDao.createDungeonRun(Dungeon.GHOST_SHIP));
 		return "redirect:/planning/ghostship";
 	}
 
 	@RequestMapping(value="/planning/ghostship", method=RequestMethod.GET)
 	public String planningGhostShip(
-			@RequestParam("runId") long runId,
+			@RequestParam("run_id") long runId,
 			Map<String, Object> model)
 	{
 		model.put("guilds", commonDao.allGuilds());
@@ -50,25 +51,37 @@ public class DungeonPlanning
 	
 	@RequestMapping(value="/planning/ghostship", method=RequestMethod.POST, params="action=addPlayers")
 	public String addPlayersToGhostShip(
-			@RequestParam("runId") long runId,
-			@RequestParam("guildId") long guildId,
+			@RequestParam("run_id") long runId,
+			@RequestParam("guild_id") long guildId,
 			@RequestParam("players") String players,
 			Map<String, Object> model)
 	{
 		String[] playerArray = players.split("\\s*,\\s*");
 		nationDungeonDao.addPlayersToRun(runId, guildId, Arrays.asList(playerArray), new Date());
-		model.put("runId", runId);
+		model.put("run_id", runId);
 		return "redirect:/planning/ghostship";
 	}
 	
 	@RequestMapping(value="/planning/ghostship/removePlayer")
 	public String removePlayerFromGhostShip(
-			@RequestParam("runId") long runId,
-			@RequestParam("playerId") long playerId,
+			@RequestParam("run_id") long runId,
+			@RequestParam("player_id") long playerId,
 			Map<String, Object> model)
 	{
 		nationDungeonDao.removePlayerFromRun(runId, playerId);
-		model.put("runId", runId);
+		model.put("run_id", runId);
+		return "redirect:/planning/ghostship";
+	}
+
+	@RequestMapping(value="/planning/ghostship/changeTeam")
+	public String changeTeamForGhostShip(
+			@RequestParam("run_id") long runId,
+			@RequestParam("player_id") long playerId,
+			@RequestParam("team_type") String newTeam,
+			Map<String, Object> model)
+	{
+		nationDungeonDao.changePlayerTeam(runId, playerId, TeamType.valueOf(newTeam));
+		model.put("run_id", runId);
 		return "redirect:/planning/ghostship";
 	}
 }
