@@ -132,9 +132,10 @@ public class NationDungeonDao extends BaseDao
 	
 	final String runPlayersSql = "select p.id as player_id, p.name as player_name, g.name as guild_name, " +
 			"datetime(s.join_time/1000, 'unixepoch', 'localtime') as join_time " +
-			"from player p join guild g on p.guild_id = g.id join dungeonrunstats_players s on s.player_id = p.id";
+			"from player p join guild g on p.guild_id = g.id join dungeonrunstats_players s on s.player_id = p.id " +
+			"where dungeonrun_id = ?";
 	public List<Map<String, Object>> getDungeonRoster(long runId)
 	{
-		return getJdbcTemplate().queryForList(runPlayersSql);
+		return getJdbcTemplate().queryForList(runPlayersSql, runId);
 	}
 }

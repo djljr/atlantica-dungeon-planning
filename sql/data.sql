@@ -9,5 +9,4 @@ insert into guild (name) values ('HeLL');
 insert into guild (name) values ('Hyde');
 insert into guild (name) values ('TwilightProject');
 
-insert into dungeon (name) values ('Ghost Ship');
 

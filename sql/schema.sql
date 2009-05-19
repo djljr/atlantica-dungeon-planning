@@ -1,6 +1,6 @@
 create table guild ( id integer primary key autoincrement, name text );
 
-create table player (id integer primary key autoincrement, name text );
+create table player (id integer primary key autoincrement, name text, guild_id integer );
 
 create table dungeonrunstats ( id integer primary key autoincrement, dungeon_key text );
 
