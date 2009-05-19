@@ -7,6 +7,7 @@ import java.util.Map;
 import org.erenda.atlantica.dao.CommonDao;
 import org.erenda.atlantica.dao.NationDungeonDao;
 import org.erenda.atlantica.domain.Dungeon;
+import org.erenda.atlantica.domain.DungeonLevel;
 import org.erenda.atlantica.domain.TeamType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -44,6 +45,12 @@ public class DungeonPlanning
 			@RequestParam("run_id") long runId,
 			Map<String, Object> model)
 	{
+		if(!nationDungeonDao.isInPlanning(runId))
+		{
+			model.put("run_id", runId);
+			return "redirect:/manage/ghostship";
+		}
+		
 		model.put("guilds", commonDao.allGuilds());
 		model.put("currentRoster", nationDungeonDao.getDungeonRoster(runId));
 		return "Dungeon/Planning/ghostShip";
@@ -56,8 +63,14 @@ public class DungeonPlanning
 			@RequestParam("players") String players,
 			Map<String, Object> model)
 	{
+		if(!nationDungeonDao.isInPlanning(runId))
+		{
+			model.put("run_id", runId);
+			return "redirect:/manage/ghostship";
+		}
+		
 		String[] playerArray = players.split("\\s*,\\s*");
-		nationDungeonDao.addPlayersToRun(runId, guildId, Arrays.asList(playerArray), new Date());
+		nationDungeonDao.addPlayersToRun(runId, guildId, Arrays.asList(playerArray), DungeonLevel.BEFORE_START, new Date());
 		model.put("run_id", runId);
 		return "redirect:/planning/ghostship";
 	}
@@ -68,6 +81,12 @@ public class DungeonPlanning
 			@RequestParam("player_id") long playerId,
 			Map<String, Object> model)
 	{
+		if(!nationDungeonDao.isInPlanning(runId))
+		{
+			model.put("run_id", runId);
+			return "redirect:/manage/ghostship";
+		}
+		
 		nationDungeonDao.removePlayerFromRun(runId, playerId);
 		model.put("run_id", runId);
 		return "redirect:/planning/ghostship";
@@ -80,6 +99,12 @@ public class DungeonPlanning
 			@RequestParam("team_type") String newTeam,
 			Map<String, Object> model)
 	{
+		if(!nationDungeonDao.isInPlanning(runId))
+		{
+			model.put("run_id", runId);
+			return "redirect:/manage/ghostship";
+		}
+		
 		nationDungeonDao.changePlayerTeam(runId, playerId, TeamType.valueOf(newTeam));
 		model.put("run_id", runId);
 		return "redirect:/planning/ghostship";
@@ -90,6 +115,12 @@ public class DungeonPlanning
 			@RequestParam("run_id") long runId,
 			Map<String, Object> model)
 	{
+		if(!nationDungeonDao.isInPlanning(runId))
+		{
+			model.put("run_id", runId);
+			return "redirect:/manage/ghostship";
+		}
+		
 		nationDungeonDao.startRun(runId, new Date());
 		model.put("run_id", runId);
 		return "redirect:/manage/ghostship";

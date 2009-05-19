@@ -3,7 +3,7 @@
 <html>
 <head><title>Ghost Ship</title></head>
 <body>
-<h1>Ghost Ship</h1>
+<h1>Ghost Ship - Planning</h1>
 <fieldset>
 <legend>Add Players</legend>
 <form name="bulkAdd" method="post">
@@ -39,5 +39,7 @@
 	</display:column>
 </display:table>
 </fieldset>
+
+<button onclick="ghostship">Begin Run</button>
 </body>
 </html>

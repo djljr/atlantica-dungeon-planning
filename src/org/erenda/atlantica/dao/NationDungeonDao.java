@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.erenda.atlantica.domain.Dungeon;
+import org.erenda.atlantica.domain.DungeonLevel;
 import org.erenda.atlantica.domain.Guild;
 import org.erenda.atlantica.domain.Player;
 import org.erenda.atlantica.domain.TeamType;
@@ -45,7 +46,7 @@ public class NationDungeonDao extends BaseDao
 		return true;
 	}
 	
-	public void addPlayersToRun(long runId, long guildId, List<String> players, Date timestamp)
+	public void addPlayersToRun(long runId, long guildId, List<String> players, DungeonLevel level, Date timestamp)
 	{
 		if(!isValidRun(runId)) return;
 		List<Long> playerIds = new ArrayList<Long>();
@@ -56,7 +57,7 @@ public class NationDungeonDao extends BaseDao
 				playerIds.add(id);
 		}
 		
-		addPlayersToRunInternal(runId, playerIds, timestamp);
+		addPlayersToRunInternal(runId, playerIds, level, timestamp);
 	}
 
 	final String isOnRunSql = "select player_id from dungeonrunstats_players where player_id = ? and dungeonrun_id = ?";
@@ -66,11 +67,11 @@ public class NationDungeonDao extends BaseDao
 		return getJdbcTemplate().queryForList(isOnRunSql, playerId, runId).size() > 0;
 	}
 	
-	final String addToRunSql = "insert into dungeonrunstats_players (dungeonrun_id, player_id, join_time, team_type) values (?, ?, ?, ?)";
-	private void addPlayersToRunInternal(long runId, List<Long> playerIds, Date timestamp)
+	final String addToRunSql = "insert into dungeonrunstats_players (dungeonrun_id, player_id, join_time, team_type, join_level, box_level) values (?, ?, ?, ?, ?, ?)";
+	private void addPlayersToRunInternal(long runId, List<Long> playerIds, DungeonLevel level, Date timestamp)
 	{
 		for(long playerId : playerIds)
-			getJdbcTemplate().update(addToRunSql, runId, playerId, timestamp.getTime(), TeamType.TRASH.name());
+			getJdbcTemplate().update(addToRunSql, runId, playerId, timestamp.getTime(), TeamType.TRASH.name(), level.name(), level.name());
 	}
 
 	final String removeFromRunSql = "delete from dungeonrunstats_players where player_id = ? and dungeonrun_id = ?";
@@ -161,5 +162,11 @@ public class NationDungeonDao extends BaseDao
 	{
 		if(isValidRun(runId))
 			getJdbcTemplate().update(insertTimestampSql, runId, TimestampType.START_TIME, timestamp.getTime());
+	}
+	
+	final String allTimestampsSql = "select dungeonrun_id as id, timestamp_text, timestamp_time from dungeonrunstats_timestamps where dungeonrun_id = ?";
+	public List<Map<String, Object>> getTimestampsForRun(long runId)
+	{
+		return getJdbcTemplate().queryForList(allTimestampsSql, runId);
 	}
 }
