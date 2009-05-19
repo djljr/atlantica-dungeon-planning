@@ -35,7 +35,7 @@ public class DungeonPlanning
 	@RequestMapping(value="/planning/ghostship/create")
 	public String createGhostShipRun(Map<String, Object> model)
 	{
-		model.put("run_id", nationDungeonDao.createDungeonRun(Dungeon.GHOST_SHIP));
+		model.put("run_id", nationDungeonDao.createDungeonRun(Dungeon.GHOST_SHIP, new Date()));
 		return "redirect:/planning/ghostship";
 	}
 
@@ -83,5 +83,23 @@ public class DungeonPlanning
 		nationDungeonDao.changePlayerTeam(runId, playerId, TeamType.valueOf(newTeam));
 		model.put("run_id", runId);
 		return "redirect:/planning/ghostship";
+	}
+	
+	@RequestMapping(value="/planning/ghostship/startRun")
+	public String startGhostShip(
+			@RequestParam("run_id") long runId,
+			Map<String, Object> model)
+	{
+		nationDungeonDao.startRun(runId, new Date());
+		model.put("run_id", runId);
+		return "redirect:/manage/ghostship";
+	}
+	
+	@RequestMapping(value="/manage/ghostship")
+	public String manageGhostShip(
+			@RequestParam("run_id") long runId,
+			Map<String, Object> model)
+	{
+		return "Dungeon/Manage/ghostShip";
 	}
 }

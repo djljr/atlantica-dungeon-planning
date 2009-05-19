@@ -18,19 +18,28 @@ import org.springframework.stereotype.Repository;
 public class NationDungeonDao extends BaseDao
 {
 	final String createStatsSql = "insert into dungeonrunstats (id, dungeon_key) values (?, ?)";
-	public long createDungeonRun(Dungeon dungeon)
+	public long createDungeonRun(Dungeon dungeon, Date timestamp)
 	{
 		synchronized (this)
 		{
 			long id = getNextId("dungeonrunstats");
 			getJdbcTemplate().update(createStatsSql, id, dungeon.name());
+			getJdbcTemplate().update(insertTimestampSql, id, TimestampType.CREATE_TIME, timestamp.getTime());
 			return id;
 		}
 	}
+	
 	final String validRunSql = "select timestamp_time is null as valid from dungeonrunstats_timestamps where timestamp_type = ?";
 	public Boolean isValidRun(long runId)
 	{
 		List<Map<String, Object>> result = getJdbcTemplate().queryForList(validRunSql, new Object[] { TimestampType.FINISH_TIME });
+		if(result.size() > 0)
+			return (Boolean) DataAccessUtils.singleResult(result).get("valid");
+		return true;
+	}
+	public Boolean isInPlanning(long runId)
+	{
+		List<Map<String, Object>> result = getJdbcTemplate().queryForList(validRunSql, new Object[] { TimestampType.START_TIME });
 		if(result.size() > 0)
 			return (Boolean) DataAccessUtils.singleResult(result).get("valid");
 		return true;
@@ -145,5 +154,12 @@ public class NationDungeonDao extends BaseDao
 	{
 		if(isValidRun(runId) && isPlayerOnRun(runId, playerId))
 			getJdbcTemplate().update(teamUpdateSql, newTeam.name(), runId, playerId);
+	}
+	
+	final String insertTimestampSql = "insert into dungeonrunstats_timestamps (dungeonrun_id, timestamp_text, timestamp_time) values (?, ?, ?)";
+	public void startRun(long runId, Date timestamp)
+	{
+		if(isValidRun(runId))
+			getJdbcTemplate().update(insertTimestampSql, runId, TimestampType.START_TIME, timestamp.getTime());
 	}
 }
