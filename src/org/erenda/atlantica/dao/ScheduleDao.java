@@ -20,7 +20,8 @@ public class ScheduleDao extends JdbcDaoSupport
 	}
 	
 	@Autowired
-	protected void setDS(DataSource dataSource) {
+	protected void setDS(DataSource dataSource) 
+	{
 		setDataSource(dataSource);
 	}
 }
