@@ -24,8 +24,13 @@ public class GhostShipManager
 		
 		for(Map<String, Object> ts : timestamps)
 		{
-			TimestampType.valueOf((String) ts.get("timestamp_text"));
+			completedLevels.add(TimestampType.valueOf((String) ts.get("timestamp_type")).getLevel());
 		}
 		return DungeonLevel.BEFORE_START;
+	}
+	
+	public DungeonResults getResultsForDungeon(long runId)
+	{
+		return new DungeonResults();
 	}
 }

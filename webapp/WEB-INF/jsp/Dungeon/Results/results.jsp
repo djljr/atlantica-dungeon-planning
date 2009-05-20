@@ -3,7 +3,7 @@
 <html>
 <head><title>Ghost Ship</title></head>
 <body>
-<h1>Ghost Ship - In Progress (${currentFloor})</h1>
+<h1>Ghost Ship - Results</h1>
 <fieldset>
 <legend>Add Players</legend>
 <form name="bulkAdd" method="post">
@@ -26,9 +26,10 @@
 <legend>Current Roster</legend>
 <display:table name="currentRoster" id="p">
 	<display:column title="Name" property="player_name" sortable="true" />
-	<display:column title="Guild" property="guild_name" sortable="true"/>
+	<display:column title="Guild" property="guild_name" sortable="true" />
 	<display:column title="Join Time" property="join_time" sortable="true" />
 	<display:column title="Join Floor" property="join_level" sortable="true" />
+	<display:column title="Box Level" property="box_level" sortable="true" />
 	<display:column>
 		<c:if test="${p.team_type != 'TRASH'}"><a href="ghostship/changeTeam?player_id=${p.player_id}&run_id=${param.run_id}&team_type=TRASH">Trash</a></c:if>
 		<c:if test="${p.team_type == 'TRASH'}"><span style="font-weight:bold">Trash</span></c:if>
@@ -41,6 +42,6 @@
 </display:table>
 </fieldset>
 
-<button onclick="location.href='ghostship/advance?run_id=${param.run_id}'">Advance To Next Floor</button>
+<button onclick="location.href='ghostship/finalize?run_id=${param.run_id}'">Finalize</button>
 </body>
 </html>

@@ -18,37 +18,45 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class NationDungeonDao extends BaseDao
 {
-	final String createStatsSql = "insert into dungeonrunstats (id, dungeon_key) values (?, ?)";
+	final String createStatsSql = "insert into dungeonrunstats (id, dungeon_key, dungeon_level) values (?, ?, ?)";
 	public long createDungeonRun(Dungeon dungeon, Date timestamp)
 	{
 		synchronized (this)
 		{
 			long id = getNextId("dungeonrunstats");
-			getJdbcTemplate().update(createStatsSql, id, dungeon.name());
+			getJdbcTemplate().update(createStatsSql, id, dungeon, DungeonLevel.BEFORE_START);
 			getJdbcTemplate().update(insertTimestampSql, id, TimestampType.CREATE_TIME, timestamp.getTime());
 			return id;
 		}
 	}
 	
-	final String validRunSql = "select timestamp_time is null as valid from dungeonrunstats_timestamps where timestamp_type = ?";
-	public Boolean isValidRun(long runId)
+	final String validRunSql = "select timestamp_time is null as valid from dungeonrunstats_timestamps where timestamp_type = ? and dungeonrun_id = ?";
+	public Boolean isFinished(long runId)
 	{
-		List<Map<String, Object>> result = getJdbcTemplate().queryForList(validRunSql, new Object[] { TimestampType.FINISH_TIME });
+		List<Map<String, Object>> result = getJdbcTemplate().queryForList(validRunSql, new Object[] { TimestampType.FINISH_TIME, runId });
 		if(result.size() > 0)
-			return (Boolean) DataAccessUtils.singleResult(result).get("valid");
-		return true;
+			return true;
+		return false;
 	}
 	public Boolean isInPlanning(long runId)
 	{
-		List<Map<String, Object>> result = getJdbcTemplate().queryForList(validRunSql, new Object[] { TimestampType.START_TIME });
+		List<Map<String, Object>> result = getJdbcTemplate().queryForList(validRunSql, new Object[] { TimestampType.START_TIME, runId });
 		if(result.size() > 0)
-			return (Boolean) DataAccessUtils.singleResult(result).get("valid");
+			return false;
 		return true;
+	}
+	public Boolean isInProgress(long runId)
+	{
+		return !isFinished(runId) && !isInPlanning(runId);
+	}
+	public boolean isFinalized(long runId)
+	{
+		return currentLevel(runId).equals(DungeonLevel.FINALIZED);
 	}
 	
 	public void addPlayersToRun(long runId, long guildId, List<String> players, DungeonLevel level, Date timestamp)
 	{
-		if(!isValidRun(runId)) return;
+		if(isFinished(runId)) return;
 		List<Long> playerIds = new ArrayList<Long>();
 		for(String player : players)
 		{
@@ -71,17 +79,17 @@ public class NationDungeonDao extends BaseDao
 	private void addPlayersToRunInternal(long runId, List<Long> playerIds, DungeonLevel level, Date timestamp)
 	{
 		for(long playerId : playerIds)
-			getJdbcTemplate().update(addToRunSql, runId, playerId, timestamp.getTime(), TeamType.TRASH.name(), level.name(), level.name());
+			getJdbcTemplate().update(addToRunSql, runId, playerId, timestamp.getTime(), TeamType.TRASH, level, level);
 	}
 
 	final String removeFromRunSql = "delete from dungeonrunstats_players where player_id = ? and dungeonrun_id = ?";
 	public void removePlayerFromRun(long runId, long playerId)
 	{
-		if(!isValidRun(runId)) return;
+		if(isFinished(runId)) return;
 		getJdbcTemplate().update(removeFromRunSql, playerId, runId);
 	}
 	
-	final String selectPlayerSql = "select p.id as player_id, p.name as player_name, p.guild_id, g.name as guild_name from player p join guild g on p.guild_id = g.id where p.name = ?";
+	final String selectPlayerSql = "select p.id as player_id, p.name as player_name, p.guild_id, g.name as guild_name from player p join guild g on p.guild_id = g.id where lower(p.name) = ?";
 	private Player findOrCreatePlayer(String playerName, long guildId)
 	{
 		Player player = findPlayer(playerName);
@@ -114,7 +122,7 @@ public class NationDungeonDao extends BaseDao
 
 	private Player findPlayer(String playerName)
 	{
-		return DataAccessUtils.singleResult(getJdbcTemplate().query(selectPlayerSql, new Object[] { playerName }, playerMapper ));
+		return DataAccessUtils.singleResult(getJdbcTemplate().query(selectPlayerSql, new Object[] { playerName.toLowerCase() }, playerMapper ));
 	}
 	
 	private final ParameterizedRowMapper<Player> playerMapper = new ParameterizedRowMapper<Player>()
@@ -142,7 +150,7 @@ public class NationDungeonDao extends BaseDao
 	};
 	
 	final String runPlayersSql = "select p.id as player_id, p.name as player_name, g.name as guild_name, " +
-			"datetime(s.join_time/1000, 'unixepoch', 'localtime') as join_time, s.team_type " +
+			"datetime(s.join_time/1000, 'unixepoch', 'localtime') as join_time, s.team_type, s.join_level " +
 			"from player p join guild g on p.guild_id = g.id join dungeonrunstats_players s on s.player_id = p.id " +
 			"where dungeonrun_id = ?";
 	public List<Map<String, Object>> getDungeonRoster(long runId)
@@ -153,20 +161,42 @@ public class NationDungeonDao extends BaseDao
 	final String teamUpdateSql = "update dungeonrunstats_players set team_type = ? where dungeonrun_id = ? and player_id = ?";
 	public void changePlayerTeam(long runId, long playerId, TeamType newTeam)
 	{
-		if(isValidRun(runId) && isPlayerOnRun(runId, playerId))
-			getJdbcTemplate().update(teamUpdateSql, newTeam.name(), runId, playerId);
+		if(!isFinished(runId) && isPlayerOnRun(runId, playerId))
+			getJdbcTemplate().update(teamUpdateSql, newTeam, runId, playerId);
 	}
 	
-	final String insertTimestampSql = "insert into dungeonrunstats_timestamps (dungeonrun_id, timestamp_text, timestamp_time) values (?, ?, ?)";
+	final String insertTimestampSql = "insert into dungeonrunstats_timestamps (dungeonrun_id, timestamp_type, timestamp_time) values (?, ?, ?)";
+	final String updateLevelSql = "update dungeonrunstats set dungeon_level = ? where id = ?";
 	public void startRun(long runId, Date timestamp)
 	{
-		if(isValidRun(runId))
+		if(isInPlanning(runId))
+		{
 			getJdbcTemplate().update(insertTimestampSql, runId, TimestampType.START_TIME, timestamp.getTime());
+			getJdbcTemplate().update(updateLevelSql, TimestampType.START_TIME.getLevel(), runId);
+		}
 	}
 	
-	final String allTimestampsSql = "select dungeonrun_id as id, timestamp_text, timestamp_time from dungeonrunstats_timestamps where dungeonrun_id = ?";
+	final String currentLevelSql = "select dungeon_level from dungeonrunstats where id = ?";
+	public DungeonLevel currentLevel(long runId)
+	{
+		String level = getJdbcTemplate().queryForObject(currentLevelSql, new Object[] { runId }, String.class);
+		return DungeonLevel.valueOf(level);
+	}
+	
+	final String allTimestampsSql = "select dungeonrun_id as id, timestamp_type, timestamp_time from dungeonrunstats_timestamps where dungeonrun_id = ?";
 	public List<Map<String, Object>> getTimestampsForRun(long runId)
 	{
 		return getJdbcTemplate().queryForList(allTimestampsSql, runId);
+	}
+	
+	public void advanceLevel(long runId, Date timestamp)
+	{
+		DungeonLevel current = currentLevel(runId);
+		DungeonLevel next = current.getNext();
+		if(next != null)
+		{
+			getJdbcTemplate().update(insertTimestampSql, runId, current.getTimestampType(), timestamp.getTime());
+			getJdbcTemplate().update(updateLevelSql, next, runId);
+		}
 	}
 }
