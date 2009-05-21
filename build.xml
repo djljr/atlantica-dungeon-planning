@@ -1,0 +1,58 @@
+<project name="atlantica.erenda" default="prep" basedir=".">
+	
+	<property name="config.dir" value="config" />
+	
+	<property name="build.dir" value="build" />
+	<property name="build.webinf.dir" value="${build.dir}/WEB-INF" />
+	<property name="build.lib.dir" value="${build.webinf.dir}/lib" />
+	<property name="build.class.dir" value="${build.webinf.dir}/classes" />
+	
+	<property name="webapp.dir" value="webapp" />
+	<property name="src.dir" value="src" />
+	<property name="lib.dir" value="${webapp.dir}/WEB-INF/lib" />
+		
+	<path id="build.classpath">
+		<pathelement location="${build.class.dir}" />
+		<fileset dir="${lib.dir}">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	
+	<target name="init" description="Initializes everything, creates directories, etc.">
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${build.webinf.dir}" />
+		<mkdir dir="${build.class.dir}" />
+		<mkdir dir="${build.lib.dir}" />
+	</target>
+	
+	<target name="clean" description="Cleans away all generated files.">
+		<delete dir="${build.class.dir}" />
+		<delete dir="${build.lib.dir}" />
+		<delete dir="${build.webinf.dir}" />
+		<delete dir="${build.dir}" />
+	</target>
+	
+	<target name="compile" depends="init">
+		<javac srcdir="${src.dir}" destdir="${build.class.dir}" debug="on" target="5">
+			<classpath refid="build.classpath" />
+		</javac>
+	</target>
+		
+	<target name="prep" depends="compile">
+		<copy todir="${build.class.dir}" includeemptydirs="false" preservelastmodified="true" flatten="false" overwrite="true">
+			<fileset dir="${config.dir}/common" />
+		</copy>
+		<copy todir="${build.dir}" includeemptydirs="false" preservelastmodified="true">
+			<fileset dir="${webapp.dir}">
+				<exclude name="**/*.properties" />
+				<exclude name="**/persistence.xml" />
+				<exclude name="**/*.java" />
+				<exclude name="**/*.class" />
+				<exclude name="**/.svn/**" />
+				<exclude name="**/_svn/**" />
+				<exclude name="**/jsp-api.jar" />
+				<exclude name="**/servlet-api.jar" />
+			</fileset>
+		</copy>		
+	</target>
+</project>
