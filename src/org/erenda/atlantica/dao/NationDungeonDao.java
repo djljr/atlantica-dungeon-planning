@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.erenda.atlantica.domain.Dungeon;
 import org.erenda.atlantica.domain.DungeonLevel;
 import org.erenda.atlantica.domain.Guild;
@@ -26,6 +27,7 @@ public class NationDungeonDao extends BaseDao
 			long id = getNextId("dungeonrunstats");
 			getJdbcTemplate().update(createStatsSql, id, dungeon, DungeonLevel.BEFORE_START);
 			getJdbcTemplate().update(insertTimestampSql, id, TimestampType.CREATE_TIME, timestamp.getTime());
+			getJdbcTemplate().update(dungeon.defaultsSql(id));
 			return id;
 		}
 	}
@@ -56,7 +58,7 @@ public class NationDungeonDao extends BaseDao
 	
 	public void addPlayersToRun(long runId, long guildId, List<String> players, DungeonLevel level, Date timestamp)
 	{
-		if(isFinished(runId)) return;
+		if(isFinalized(runId)) return;
 		List<Long> playerIds = new ArrayList<Long>();
 		for(String player : players)
 		{
@@ -85,7 +87,7 @@ public class NationDungeonDao extends BaseDao
 	final String removeFromRunSql = "delete from dungeonrunstats_players where player_id = ? and dungeonrun_id = ?";
 	public void removePlayerFromRun(long runId, long playerId)
 	{
-		if(isFinished(runId)) return;
+		if(isFinalized(runId)) return;
 		getJdbcTemplate().update(removeFromRunSql, playerId, runId);
 	}
 	
@@ -102,9 +104,9 @@ public class NationDungeonDao extends BaseDao
 	final String createPlayerSql = "insert into player (name, guild_id) values (?, ?)";
 	private Player createPlayer(String playerName, long guildId)
 	{
-		if(guildExists(guildId))
+		if(guildExists(guildId) && StringUtils.isNotBlank(playerName))
 		{
-			getJdbcTemplate().update(createPlayerSql, playerName, guildId);
+			getJdbcTemplate().update(createPlayerSql, StringUtils.trim(playerName), guildId);
 		}
 		return findPlayer(playerName);
 	}
@@ -150,7 +152,7 @@ public class NationDungeonDao extends BaseDao
 	};
 	
 	final String runPlayersSql = "select p.id as player_id, p.name as player_name, g.name as guild_name, " +
-			"datetime(s.join_time/1000, 'unixepoch', 'localtime') as join_time, s.team_type, s.join_level " +
+			"datetime(s.join_time/1000, 'unixepoch', 'localtime') as join_time, s.team_type, s.join_level, s.box_level " +
 			"from player p join guild g on p.guild_id = g.id join dungeonrunstats_players s on s.player_id = p.id " +
 			"where dungeonrun_id = ?";
 	public List<Map<String, Object>> getDungeonRoster(long runId)
@@ -161,7 +163,7 @@ public class NationDungeonDao extends BaseDao
 	final String teamUpdateSql = "update dungeonrunstats_players set team_type = ? where dungeonrun_id = ? and player_id = ?";
 	public void changePlayerTeam(long runId, long playerId, TeamType newTeam)
 	{
-		if(!isFinished(runId) && isPlayerOnRun(runId, playerId))
+		if(!isFinalized(runId) && isPlayerOnRun(runId, playerId))
 			getJdbcTemplate().update(teamUpdateSql, newTeam, runId, playerId);
 	}
 	
@@ -198,5 +200,37 @@ public class NationDungeonDao extends BaseDao
 			getJdbcTemplate().update(insertTimestampSql, runId, current.getTimestampType(), timestamp.getTime());
 			getJdbcTemplate().update(updateLevelSql, next, runId);
 		}
+	}
+	
+	final String insertSettingsSql = "insert into dungeonrunstats_settings (dungeonrun_id, box_total, bonus_for_tower, box_less_1f, box_less_2f, box_less_3f) values (?, ?, ?, ?, ?, ?)";
+	final String setSettingsSql = "update dungeonrunstats set box_total = ?, bonus_for_tower = ?, box_less_1f = ?, box_less_2f = ?, box_less_3f = ? where dungeonrun_id = ?";
+	final String selectSettingsSql = "select box_total, bonus_for_tower, box_less_1f, box_less_2f, box_less_3f from dungeonrunstats_settings where dungeonrun_id = ?";
+	public void setSettings(long runId, long boxTotal, long bonusForTower,
+			long boxLess1F, long boxLess2F, long boxLess3F)
+	{
+		getJdbcTemplate().update(setSettingsSql, boxTotal, bonusForTower, boxLess1F, boxLess2F, boxLess3F, runId);
+	}
+	
+	public Map<String, Object> getSettings(long runId)
+	{
+		return getJdbcTemplate().queryForMap(selectSettingsSql, runId);
+	}
+	
+	final String guildCountSql = "select guild_id, g.name as guild_name, count(*) as count " +
+			"from dungeonrunstats_players dsp join player p on p.id = dsp.player_id join guild g on g.id = p.guild_id " +
+			"where dungeonrun_id = ? group by g.name, guild_id";
+	public List<Map<String, Object>> getGuildCounts(long runId)
+	{
+		return getJdbcTemplate().queryForList(guildCountSql, runId);
+	}
+	
+	final String changeBoxLevelSql = "update dungeonrunstats_players set box_level = ? where dungeonrun_id = ? and player_id = ?";
+	public void changeBoxLevel(long runId, long playerId, DungeonLevel boxLevel)
+	{
+		getJdbcTemplate().update(changeBoxLevelSql, boxLevel, runId, playerId);	
+	}
+	public void finalizeRun(long runId)
+	{
+		getJdbcTemplate().update(updateLevelSql, DungeonLevel.FINALIZED, runId);
 	}
 }

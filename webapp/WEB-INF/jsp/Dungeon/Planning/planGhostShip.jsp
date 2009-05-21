@@ -7,6 +7,14 @@
 <fieldset>
 <legend>Settings</legend>
 <form name="settings" method="post">
+Total Boxes: <input type="text" name="box_total" value="${settings.box_total}" /><br />
+Bonus for Tower Team: <input type="text" name="bonus_for_tower" value="${settings.bonus_for_tower}"/><br />
+Box Penalty:<br />
+Join on 1st Floor: <input type="text" name="box_less_1f" value="${settings.box_less_1f}"/><br />
+Join on 2nd Floor: <input type="text" name="box_less_2f" value="${settings.box_less_2f}"/><br />
+Join on 3rd Floor: <input type="text" name="box_less_3f" value="${settings.box_less_3f}"/><br />
+<input type="hidden" name="action" value="saveSettings" />
+<button type="submit">Save</button>
 </form>
 </fieldset>
 
@@ -30,7 +38,7 @@
 
 <fieldset>
 <legend>Current Roster</legend>
-<display:table name="currentRoster" id="p">
+<display:table name="currentRoster" id="p" requestURI="${requestURI}">
 	<display:column title="Name" property="player_name" sortable="true" />
 	<display:column title="Guild" property="guild_name" sortable="true" />
 	<display:column title="Join Time" property="join_time" sortable="true" />

@@ -1,5 +1,7 @@
 package org.erenda.atlantica.domain;
 
+import org.springframework.expression.spel.generated.SpringExpressionsParser.firstSelection_return;
+
 public enum DungeonLevel
 {
 	FINALIZED {
@@ -32,4 +34,8 @@ public enum DungeonLevel
 	
 	public abstract DungeonLevel getNext();
 	public abstract TimestampType getTimestampType();
+	public static DungeonLevel[] boxValues()
+	{
+		return new DungeonLevel[] { BEFORE_START, FIRST_FLOOR, SECOND_FLOOR, THIRD_FLOOR, AFTER_END };
+	}
 }

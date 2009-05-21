@@ -24,7 +24,7 @@
 
 <fieldset>
 <legend>Current Roster</legend>
-<display:table name="currentRoster" id="p">
+<display:table name="currentRoster" id="p" requestURI="${requestURI}">
 	<display:column title="Name" property="player_name" sortable="true" />
 	<display:column title="Guild" property="guild_name" sortable="true"/>
 	<display:column title="Join Time" property="join_time" sortable="true" />

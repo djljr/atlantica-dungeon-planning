@@ -6,8 +6,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.erenda.atlantica.dao.NationDungeonDao;
+import org.erenda.atlantica.dao.ResultsDao;
 import org.erenda.atlantica.domain.DungeonLevel;
 import org.erenda.atlantica.domain.TimestampType;
+import org.erenda.atlantica.manager.DungeonResults.PlayerCounts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 public class GhostShipManager
 {
 	@Autowired NationDungeonDao nationDungeonDao;
+	@Autowired ResultsDao resultsDao;
 	
 	public DungeonLevel getLevelForRun(long runId)
 	{
@@ -30,6 +33,10 @@ public class GhostShipManager
 	
 	public DungeonResults getResultsForDungeon(long runId)
 	{
-		return new DungeonResults();
+		DungeonResults dr = new DungeonResults();
+		Map<String, Object> settings = nationDungeonDao.getSettings(runId);
+		int totalBoxes = (Integer) settings.get("box_total");
+
+		return dr;
 	}
 }
