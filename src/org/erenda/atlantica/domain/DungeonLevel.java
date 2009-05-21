@@ -1,30 +1,35 @@
 package org.erenda.atlantica.domain;
 
-public enum DungeonLevel implements Comparable<DungeonLevel>
+public enum DungeonLevel
 {
-	FINALIZED(null, null),
-	AFTER_END(null, null),
-	THIRD_FLOOR(DungeonLevel.AFTER_END, TimestampType.FINISH_TIME),
-	SECOND_FLOOR(DungeonLevel.THIRD_FLOOR, TimestampType.FLOOR_TWO_END_TIME),
-	FIRST_FLOOR(DungeonLevel.SECOND_FLOOR, TimestampType.FLOOR_ONE_END_TIME),
-	BEFORE_START(DungeonLevel.FIRST_FLOOR, TimestampType.START_TIME);
+	FINALIZED {
+		@Override public DungeonLevel getNext() { return null; }
+		@Override public TimestampType getTimestampType() { return null; }
+	},
+	AFTER_END {
+		@Override public DungeonLevel getNext() { return FINALIZED; }
+		@Override public TimestampType getTimestampType() { return null; }
+	},
+	THIRD_FLOOR {
+		@Override public DungeonLevel getNext() { return AFTER_END; }
+		@Override public TimestampType getTimestampType() { return TimestampType.FINISH_TIME; }
+	},
+	SECOND_FLOOR {
+		@Override public DungeonLevel getNext() { return THIRD_FLOOR; }
+		@Override public TimestampType getTimestampType() { return TimestampType.FLOOR_TWO_END_TIME; }
+	},
+	FIRST_FLOOR {
+		@Override public DungeonLevel getNext() { return SECOND_FLOOR; }
+		@Override public TimestampType getTimestampType() { return TimestampType.FLOOR_ONE_END_TIME; }
+	},
+	BEFORE_START {
+		@Override public DungeonLevel getNext() { return FIRST_FLOOR; }
+		@Override public TimestampType getTimestampType() { return TimestampType.START_TIME; }
+	};
 	
 	DungeonLevel next;
 	TimestampType timestamp;
 	
-	private DungeonLevel(DungeonLevel next, TimestampType timestamp)
-	{
-		this.next = next;
-		this.timestamp = timestamp;
-	}
-	
-	public DungeonLevel getNext()
-	{
-		return next;
-	}
-	
-	public TimestampType getTimestampType()
-	{
-		return timestamp;
-	}
+	public abstract DungeonLevel getNext();
+	public abstract TimestampType getTimestampType();
 }

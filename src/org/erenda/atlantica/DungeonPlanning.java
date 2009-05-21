@@ -7,7 +7,6 @@ import java.util.Map;
 import org.erenda.atlantica.dao.CommonDao;
 import org.erenda.atlantica.dao.NationDungeonDao;
 import org.erenda.atlantica.domain.Dungeon;
-import org.erenda.atlantica.domain.DungeonLevel;
 import org.erenda.atlantica.domain.TeamType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

@@ -4,7 +4,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import org.erenda.atlantica.dao.NationDungeonDao;
 import org.erenda.atlantica.domain.DungeonLevel;
