@@ -38,7 +38,7 @@
 		</javac>
 	</target>
 		
-	<target name="prep" depends="compile">
+	<target name="prep" depends="clean, compile">
 		<copy todir="${build.class.dir}" includeemptydirs="false" preservelastmodified="true" flatten="false" overwrite="true">
 			<fileset dir="${config.dir}/common" />
 		</copy>
