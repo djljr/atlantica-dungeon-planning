@@ -9,6 +9,7 @@ import org.erenda.atlantica.dao.NationDungeonDao;
 import org.erenda.atlantica.domain.Dungeon;
 import org.erenda.atlantica.domain.DungeonLevel;
 import org.erenda.atlantica.domain.TeamType;
+import org.erenda.atlantica.manager.GhostShipManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,7 +21,8 @@ public class DungeonPlanning
 {
 	@Autowired CommonDao commonDao;
 	@Autowired NationDungeonDao nationDungeonDao;
-
+	@Autowired GhostShipManager ghostShipManager;
+	
 	@RequestMapping("/schedule")
 	public String index(Map<String, Object> model)
 	{
@@ -244,8 +246,11 @@ public class DungeonPlanning
 			@RequestParam("run_id") long runId,
 			Map<String, Object> model)
 	{
+		model.put("currentRoster", nationDungeonDao.getDungeonRoster(runId));
+
 		if(nationDungeonDao.isFinalized(runId))
 		{
+			model.put("dungeonResults", ghostShipManager.getResultsForDungeon(runId));
 			return "Dungeon/Results/resultsFinal";	
 		}
 		else
@@ -254,7 +259,6 @@ public class DungeonPlanning
 			model.put("counts", nationDungeonDao.getGuildCounts(runId));
 			model.put("settings", nationDungeonDao.getSettings(runId));
 			model.put("guilds", commonDao.allGuilds());
-			model.put("currentRoster", nationDungeonDao.getDungeonRoster(runId));
 			
 			return "Dungeon/Results/results";	
 		}

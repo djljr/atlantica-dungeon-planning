@@ -16,5 +16,11 @@
 	<display:column title="Team" property="team_type" sortable="true" />
 </display:table>
 </fieldset>
+<fieldset>
+<legend>Results</legend>
+<display:table name="dungeonResults.guildCounts" id="gc">
+	<display:column property="guild" />
+</display:table>
+</fieldset>
 </body>
 </html>
