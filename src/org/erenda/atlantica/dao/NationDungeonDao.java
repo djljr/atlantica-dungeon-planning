@@ -233,4 +233,13 @@ public class NationDungeonDao extends BaseDao
 	{
 		getJdbcTemplate().update(updateLevelSql, DungeonLevel.FINALIZED, runId);
 	}
+	
+	final String findAllRunsSql = "select id, dungeon_key, dungeon_level, create_time, count(*) as players " +
+			"from dungeonrunstats ds join dungeonrunstats_players dsp on dsp.dungeonrun_id = ds.id " +
+			" join (select dungeonrun_id, datetime(timestamp_time/1000, 'unixepoch', 'localtime') as create_time from dungeonrunstats_timestamps where timestamp_type = 'CREATE_TIME') dst_create on dst_create.dungeonrun_id = ds.id " +
+			"group by id, dungeon_key, dungeon_level, dst_create.create_time";
+	public List<Map<String, Object>> findAllRuns()
+	{
+		return getJdbcTemplate().queryForList(findAllRunsSql);
+	}
 }

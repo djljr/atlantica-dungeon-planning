@@ -26,7 +26,21 @@ public class DungeonPlanning
 	@RequestMapping("/schedule")
 	public String index(Map<String, Object> model)
 	{
+		model.put("runs", nationDungeonDao.findAllRuns());
 		return "Dungeon/Planning/schedule";
+	}
+	
+	@RequestMapping("/select")
+	public String selectPage(@RequestParam("run_id") long runId, Map<String, Object> model)
+	{
+		model.put("run_id", runId);
+		if(nationDungeonDao.isInPlanning(runId))
+			return "redirect:/planning/ghostship";
+		else if(!nationDungeonDao.isInPlanning(runId) && !nationDungeonDao.isFinished(runId))
+			return "redirect:/manage/ghostship";
+		else if(!nationDungeonDao.isInPlanning(runId))
+			return "redirect:/results/ghostship";
+		else return "redirect:/planning";
 	}
 
 	@RequestMapping("/planning")
