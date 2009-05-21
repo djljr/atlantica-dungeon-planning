@@ -247,10 +247,10 @@ public class DungeonPlanning
 			Map<String, Object> model)
 	{
 		model.put("currentRoster", nationDungeonDao.getDungeonRoster(runId));
-
+		model.put("dungeonResults", ghostShipManager.getResultsForDungeon(runId));
+		
 		if(nationDungeonDao.isFinalized(runId))
 		{
-			model.put("dungeonResults", ghostShipManager.getResultsForDungeon(runId));
 			return "Dungeon/Results/resultsFinal";	
 		}
 		else
@@ -278,8 +278,10 @@ public class DungeonPlanning
 	
 	@RequestMapping(value="/results/ghostship/finalize")
 	public String finalizeRun(
-			@RequestParam("run_id") long runId)
+			@RequestParam("run_id") long runId,
+			Map<String, Object> model)
 	{
+		model.put("run_id", runId);
 		nationDungeonDao.finalizeRun(runId);
 		return "redirect:/results/ghostship";
 	}

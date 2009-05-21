@@ -20,6 +20,12 @@
 <legend>Results</legend>
 <display:table name="dungeonResults.guildCounts" id="gc">
 	<display:column property="guild" />
+	<display:column property="total" />
+	<display:column property="tower" />
+	<display:column property="firstFloor" />
+	<display:column property="secondFloor" />
+	<display:column property="thirdFloor" />
+	<display:column property="numBoxes" />
 </display:table>
 </fieldset>
 </body>

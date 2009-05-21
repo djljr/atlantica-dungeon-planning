@@ -7,7 +7,18 @@ public class DungeonResults
 {
 	private Map<String, PlayerCounts> guildCounts = new HashMap<String, PlayerCounts>();
 	private int distributedBoxTotal;
+	private double boxesPerPlayer;
 	
+	public double getBoxesPerPlayer()
+	{
+		return boxesPerPlayer;
+	}
+
+	public void setBoxesPerPlayer(double boxesPerPlayer)
+	{
+		this.boxesPerPlayer = boxesPerPlayer;
+	}
+
 	public Map<String, PlayerCounts> getGuildCounts()
 	{
 		return guildCounts;

@@ -17,22 +17,20 @@ Join on 3rd Floor: <input type="text" name="box_less_3f" value="${settings.box_l
 <button type="submit">Save</button>
 </form>
 </fieldset>
+
 <fieldset>
-<legend>Add Players</legend>
-<form name="bulkAdd" method="post">
-<label for="bulkAddPlayers" style="display:block">Bulk:</label>
-<select name="guild_id">
-	<option value="-1">--Select Guild</option>
-<c:forEach items="${guilds}" var="guild">
-	<option value="${guild.id}">${guild.name}</option>
-</c:forEach>
-</select>
-<br />
-<textarea name="players" rows="3" cols="30"></textarea>
-<br />
-<input type="hidden" name="action" value="addPlayers" />
-<button type="submit">Add</button>
-</form>
+<legend>Results</legend>
+<display:table name="dungeonResults.guildCounts" id="gc">
+	<display:column property="guild" />
+	<display:column property="total" />
+	<display:column property="tower" />
+	<display:column property="firstFloor" />
+	<display:column property="secondFloor" />
+	<display:column property="thirdFloor" />
+	<display:column property="numBoxes" />
+</display:table>
+Boxes Distributed: ${dungeonResults.distributedBoxTotal}<br />
+Boxes Per Player: ${dungeonResults.boxesPerPlayer}
 </fieldset>
 
 <fieldset>
@@ -67,6 +65,25 @@ Join on 3rd Floor: <input type="text" name="box_less_3f" value="${settings.box_l
 ${g.guild_name}: ${g.count}<c:if test="${!stat.last}">,</c:if>
 </c:forEach>
 </fieldset>
+
+<fieldset>
+<legend>Add Players</legend>
+<form name="bulkAdd" method="post">
+<label for="bulkAddPlayers" style="display:block">Bulk:</label>
+<select name="guild_id">
+	<option value="-1">--Select Guild</option>
+<c:forEach items="${guilds}" var="guild">
+	<option value="${guild.id}">${guild.name}</option>
+</c:forEach>
+</select>
+<br />
+<textarea name="players" rows="3" cols="30"></textarea>
+<br />
+<input type="hidden" name="action" value="addPlayers" />
+<button type="submit">Add</button>
+</form>
+</fieldset>
+
 <button onclick="location.href='ghostship/finalize?run_id=${param.run_id}'">Finalize</button>
 </body>
 </html>

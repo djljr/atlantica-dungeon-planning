@@ -77,6 +77,7 @@ public class GhostShipManager
 		
 		DungeonResults dr = new DungeonResults();
 		dr.setDistributedBoxTotal(distributedBoxTotal);
+		dr.setBoxesPerPlayer(boxesPerPerson);
 		dr.setGuildCounts(result);
 		return dr;
 	}
