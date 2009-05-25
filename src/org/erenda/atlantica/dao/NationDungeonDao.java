@@ -203,7 +203,7 @@ public class NationDungeonDao extends BaseDao
 	}
 	
 	final String insertSettingsSql = "insert into dungeonrunstats_settings (dungeonrun_id, box_total, bonus_for_tower, box_less_1f, box_less_2f, box_less_3f) values (?, ?, ?, ?, ?, ?)";
-	final String setSettingsSql = "update dungeonrunstats set box_total = ?, bonus_for_tower = ?, box_less_1f = ?, box_less_2f = ?, box_less_3f = ? where dungeonrun_id = ?";
+	final String setSettingsSql = "update dungeonrunstats_settings set box_total = ?, bonus_for_tower = ?, box_less_1f = ?, box_less_2f = ?, box_less_3f = ? where dungeonrun_id = ?";
 	final String selectSettingsSql = "select box_total, bonus_for_tower, box_less_1f, box_less_2f, box_less_3f from dungeonrunstats_settings where dungeonrun_id = ?";
 	public void setSettings(long runId, long boxTotal, long bonusForTower,
 			long boxLess1F, long boxLess2F, long boxLess3F)
